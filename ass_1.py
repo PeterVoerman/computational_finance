@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 def buildTree(S, vol, T, N):
     dt = T / N
@@ -19,9 +20,9 @@ S = 80
 T = 1
 N = 2
 
-print(buildTree(S, sigma, T, N))
+# print(buildTree(S, sigma, T, N))
 
-def valueOptionMatrix(tree, T, r, K, vol):
+def valueOptionMatrix(tree, T, r, K, vol, N):
     dt = T / N
 
     u = np.exp(vol * np.sqrt(dt))
@@ -36,7 +37,6 @@ def valueOptionMatrix(tree, T, r, K, vol):
         S = tree[rows - 1, c]
         tree[rows - 1, c] = max(S - K, 0)
 
-    
     for i in np.arange(rows - 1)[::-1]:
         for j in np.arange(i + 1):
             down = tree[i + 1, j]
@@ -54,5 +54,27 @@ K = 85
 r = 0.1
 
 tree = buildTree(S, sigma, T, N)
-print(valueOptionMatrix(tree, T, r, K, sigma))
+# print(valueOptionMatrix(tree, T, r, K, sigma))
+
+N = np.arange(1, 300)
+
+analytical_list = []
+approximated_list = []
+
+# priceAnalytical = 5.459532581907236
+# analytical_list = [priceAnalytical] * len(N)
+
+for n in N:
+    print(n, end='\r')
+    treeN = buildTree(S, sigma, T, n)
+    priceApproximatedly = valueOptionMatrix(treeN, T, r, K, sigma, n)
+
+    approximated_list.append(priceApproximatedly[0, 0])
+
+# plt.plot(N, analytical_list, label="Analytical")
+plt.plot(N, approximated_list, label="Approximated")
+plt.legend()
+plt.show()
+    
+
 
