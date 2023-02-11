@@ -27,18 +27,21 @@ def valueOptionMatrix(tree, T, r, K, vol, N):
     columns = tree.shape[1]
     rows = tree.shape[0]
 
+    # create a new matrix to prevent problems with global variables
+    matrix = np.zeros_like(tree)
+
     for c in np.arange(columns):
         S = tree[rows - 1, c]
-        tree[rows - 1, c] = max(S - K, 0)
+        matrix[rows - 1, c] = max(S - K, 0)
 
 
     for i in np.arange(rows - 1)[::-1]:
         for j in np.arange(i + 1):
-            down = tree[i + 1, j]
-            up = tree[i + 1, j + 1]
-            tree[i, j] = np.exp(-r * dt) * (p * up + (1 - p) * down)
+            down = matrix[i + 1, j]
+            up = matrix[i + 1, j + 1]
+            matrix[i, j] = np.exp(-r * dt) * (p * up + (1 - p) * down)
 
-    return tree
+    return matrix
 
 def valueOptionMatrixAmerican(tree, T, r, K, vol, N):
     dt = T / N
