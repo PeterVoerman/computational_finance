@@ -16,7 +16,7 @@ def buildTree(S, vol, T, N):
 
     return matrix
 
-def valueOptionMatrix(tree, T, r, K, vol, N):
+def valueOptionMatrix(tree, T, r, K, vol, N, call=True):
     dt = T / N
 
     u = np.exp(vol * np.sqrt(dt))
@@ -32,7 +32,10 @@ def valueOptionMatrix(tree, T, r, K, vol, N):
 
     for c in np.arange(columns):
         S = tree[rows - 1, c]
-        matrix[rows - 1, c] = max(S - K, 0)
+        if call:
+            matrix[rows - 1, c] = max(S - K, 0)
+        else:
+            matrix[rows - 1, c] = max(K - S, 0)
 
 
     for i in np.arange(rows - 1)[::-1]:
@@ -43,7 +46,7 @@ def valueOptionMatrix(tree, T, r, K, vol, N):
 
     return matrix
 
-def valueOptionMatrixAmerican(tree, T, r, K, vol, N):
+def valueOptionMatrixAmerican(tree, T, r, K, vol, N, call=True):
     dt = T / N
 
     u = np.exp(vol * np.sqrt(dt))
@@ -58,7 +61,10 @@ def valueOptionMatrixAmerican(tree, T, r, K, vol, N):
 
     for c in np.arange(columns):
         S = tree[rows - 1, c]
-        price_tree[rows - 1, c] = max(S - K, 0)
+        if call:
+            price_tree[rows - 1, c] = max(S - K, 0)
+        else:
+            price_tree[rows - 1, c] = max(K - S, 0)
 
 
     for i in np.arange(rows - 1)[::-1]:
@@ -68,7 +74,10 @@ def valueOptionMatrixAmerican(tree, T, r, K, vol, N):
             price_tree[i, j] = np.exp(-r * dt) * (p * up + (1 - p) * down)
 
             S = tree[i, j]
-            price_tree[i, j] = max(price_tree[i, j], S - K)
+            if call:
+                price_tree[i, j] = max(price_tree[i, j], S - K)
+            else:
+                price_tree[i, j] = max(price_tree[i, j], K - S)
 
     return price_tree
 
@@ -199,8 +208,6 @@ def part_4():
         price = valueOptionMatrix(tree, T, r, K, sigma, N)
 
         d1 = (np.log(S / K) + (r + sigma ** 2 / 2) * T) / (sigma * np.sqrt(T))
-        d2 = d1 - sigma * np.sqrt(T)
-        priceAnalytical = S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
 
         delta_tree = (price[1, 0] - price[1, 1]) / (tree[1, 0] - tree[1, 1])
         delta_analytical = norm.cdf(d1)
@@ -209,7 +216,7 @@ def part_4():
         delta_list_analytical.append(delta_analytical)
 
     plt.plot(sigma_list, delta_list_tree, label="Binomial tree")
-    plt.plot(sigma_list, delta_list_analytical, label="Black Scholes")
+    plt.plot(sigma_list, delta_list_analytical, label="Black Scholes", linestyle="--")
     plt.xlabel("Volatility")
     plt.ylabel("Delta")
     plt.legend()
@@ -217,47 +224,64 @@ def part_4():
     plt.clf()
 
 def part_5():
-    european_list = []
-    american_list = []
-    diff_list = []
+    for call in [True, False]:
+        european_list = []
+        american_list = []
+        diff_list = []
 
-    for sigma in sigma_list:
-        tree = buildTree(S, sigma, T, N)
-        price_european = valueOptionMatrix(tree, T, r, K, sigma, N)
+        for sigma in sigma_list:
+            tree = buildTree(S, sigma, T, N)
+            price_european = valueOptionMatrix(tree, T, r, K, sigma, N, call)
 
-        tree = buildTree(S, sigma, T, N)
-        price_american = valueOptionMatrixAmerican(tree, T, r, K, sigma, N)
+            tree = buildTree(S, sigma, T, N)
+            price_american = valueOptionMatrixAmerican(tree, T, r, K, sigma, N, call)
 
-        european_list.append(price_european[0, 0])
-        american_list.append(price_american[0, 0])
+            european_list.append(price_european[0, 0])
+            american_list.append(price_american[0, 0])
 
-        diff_list.append(price_american[0, 0] - price_european[0, 0])
+            diff_list.append(price_american[0, 0] - price_european[0, 0])
 
-    plt.plot(sigma_list, european_list, label="European")
-    plt.plot(sigma_list, american_list, label="American")
-    plt.xlabel("Volatility")
-    plt.ylabel("Option price")
-    plt.legend()
-    plt.savefig("american_european.png")
-    plt.clf()
+        if call:
+            plt.plot(sigma_list, european_list, label="European")
+            plt.plot(sigma_list, american_list, label="American", linestyle="--")
+            plt.xlabel("Volatility")
+            plt.ylabel("Option price")
+            plt.legend()
+            plt.savefig("american_european_call.png")
+            plt.clf()
 
-    plt.plot(sigma_list, diff_list)
-    plt.xlabel("Volatility")
-    plt.ylabel("Difference")
-    plt.savefig("american_european_diff.png")
-    plt.clf()
+            plt.plot(sigma_list, diff_list)
+            plt.xlabel("Volatility")
+            plt.ylabel("Difference")
+            plt.savefig("american_european_diff_call.png")
+            plt.clf()
+        else:
+            plt.plot(sigma_list, european_list, label="European")
+            plt.plot(sigma_list, american_list, label="American")
+            plt.xlabel("Volatility")
+            plt.ylabel("Option price")
+            plt.legend()
+            plt.savefig("american_european_put.png")
+            plt.clf()
+
+            plt.plot(sigma_list, diff_list)
+            plt.xlabel("Volatility")
+            plt.ylabel("Difference")
+            plt.savefig("american_european_diff_put.png")
+            plt.clf()
 
 
-# part_1()
-# part_2()
-# part_3()
-# part_4()
+part_1()
+part_2()
+part_3()
+part_4()
 part_5()
 
-sigma = 0.1
+sigma = 0.2
 tree = buildTree(S, sigma, T, N)
-price_american = valueOptionMatrixAmerican(tree, T, r, K, sigma, N)
-price_european = valueOptionMatrix(tree, T, r, K, sigma, N)
+price_american = valueOptionMatrixAmerican(tree, T, r, K, sigma, N, False)
+tree = buildTree(S, sigma, T, N)
+price_european = valueOptionMatrix(tree, T, r, K, sigma, N, False)
 
-print(price_european[1])
-print(price_american[1])
+print(price_american[0, 0])
+print(price_european[0, 0])
