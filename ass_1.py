@@ -81,6 +81,23 @@ def valueOptionMatrixAmerican(tree, T, r, K, vol, N, call=True):
 
     return price_tree
 
+
+def approxGbmEuler(M, T, r, vol, S0):
+    delta_t = T/M
+    price = [S0]
+
+    for m in np.arange(M):
+        Z_m = np.random.normal(0,1)
+        price.append(price[-1] + r*price[-1]*delta_t + vol * price[-1] * np.sqrt(delta_t) * Z_m)
+    return price
+
+# T = 1
+# M = 100
+# price = approxGbmEuler(M, T, 0.05, 0.2, 50)
+# plt.plot(np.arange(0,T+T/M,T/M),price)
+# plt.show()
+# quit()
+
 def example():
     sigma = 0.25
     S = 80
@@ -271,11 +288,16 @@ def part_5():
             plt.clf()
 
 
-part_1()
-part_2()
-part_3()
-part_4()
-part_5()
+def part33(M,T,):
+
+    return
+
+# part_1()
+# part_2()
+# part_3()
+# part_4()
+# part_5()
+part33()
 
 sigma = 0.2
 tree = buildTree(S, sigma, T, N)
