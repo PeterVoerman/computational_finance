@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm
+import scipy.stats as stats
 
 def buildTree(S, vol, T, N):
     dt = T / N
@@ -287,10 +288,76 @@ def part_5():
             plt.savefig("american_european_diff_put.png")
             plt.clf()
 
+def part33():
+    r = 0.06
+    starting_price = 100
+    K = 99
+    T = 1
+    time_steps = 365
 
-def part33(M,T,):
+    # same volatility experiment
+    adjust_freq = 7
+    vol = 0.2
+    iterations = 1000
+    ############################################################################
+    money_list = []
+    for i in range(iterations):
+        money = 0
+        price = approxGbmEuler(time_steps, T, r, vol, starting_price)
+        time = []
+        for x in np.arange(0,T+T/time_steps,T/time_steps):
+            if x <= 1:
+                time.append(x)
+    
+        # plt.plot(time,price)
+        # plt.show()
+
+        hedge_delta_t = 0
+
+        for t in np.arange(0, time_steps, adjust_freq):
+            previous_delta = hedge_delta_t
+
+            # calculate delta
+            d1 = (np.log(price[t] / K) + (r + vol ** 2 / 2) * (T-t/time_steps)) / (vol * np.sqrt(T-t/time_steps))
+
+            hedge_delta_t = norm.cdf(d1)
+            # print(hedge_delta_t)
+
+            # adjust hedge position, calculate net money
+            money -= price[t] * (hedge_delta_t - previous_delta)
+            # if t % 10 == 0:
+            #     print(f'price {price[t]}')
+            #     print(f'hedge_delta {hedge_delta_t}')
+            #     print(f'money {money}')
+            #     print()
+        
+        # strike day
+        if price[-1] > K:
+            option_price = price[-1] - K
+        else:
+            option_price = 0
+
+        # print('Final')
+        # print(f'stock price {price[-1]}')
+        # print(f'money {money}')
+        # print(f'hedge_delta {hedge_delta_t}')
+        # print(f'option price {option_price}')
+
+        money_at_strike = money + hedge_delta_t * price[-1] - option_price
+        # print(f'money at strike {money_at_strike}')
+
+        money_list.append(money_at_strike)
+
+    error = np.std(money_list) * 1.96
+
+    
+    print(f'Money after: {sum(money_list)/len(money_list):.2f} +- {error:.2f}')
+
+    # different volatility experiment
+
 
     return
+
 
 # part_1()
 # part_2()
@@ -299,11 +366,11 @@ def part33(M,T,):
 # part_5()
 part33()
 
-sigma = 0.2
-tree = buildTree(S, sigma, T, N)
-price_american = valueOptionMatrixAmerican(tree, T, r, K, sigma, N, False)
-tree = buildTree(S, sigma, T, N)
-price_european = valueOptionMatrix(tree, T, r, K, sigma, N, False)
+# sigma = 0.2
+# tree = buildTree(S, sigma, T, N)
+# price_american = valueOptionMatrixAmerican(tree, T, r, K, sigma, N, False)
+# tree = buildTree(S, sigma, T, N)
+# price_european = valueOptionMatrix(tree, T, r, K, sigma, N, False)
 
-print(price_american[0, 0])
-print(price_european[0, 0])
+# print(price_american[0, 0])
+# print(price_european[0, 0])
