@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm
+import scipy.stats as stats
 
 def buildTree(S, vol, T, N):
     dt = T / N
@@ -16,7 +17,7 @@ def buildTree(S, vol, T, N):
 
     return matrix
 
-def valueOptionMatrix(tree, T, r, K, vol, N):
+def valueOptionMatrix(tree, T, r, K, vol, N, call=True):
     dt = T / N
 
     u = np.exp(vol * np.sqrt(dt))
@@ -32,7 +33,10 @@ def valueOptionMatrix(tree, T, r, K, vol, N):
 
     for c in np.arange(columns):
         S = tree[rows - 1, c]
-        matrix[rows - 1, c] = max(S - K, 0)
+        if call:
+            matrix[rows - 1, c] = max(S - K, 0)
+        else:
+            matrix[rows - 1, c] = max(K - S, 0)
 
 
     for i in np.arange(rows - 1)[::-1]:
@@ -43,7 +47,7 @@ def valueOptionMatrix(tree, T, r, K, vol, N):
 
     return matrix
 
-def valueOptionMatrixAmerican(tree, T, r, K, vol, N):
+def valueOptionMatrixAmerican(tree, T, r, K, vol, N, call=True):
     dt = T / N
 
     u = np.exp(vol * np.sqrt(dt))
@@ -58,7 +62,10 @@ def valueOptionMatrixAmerican(tree, T, r, K, vol, N):
 
     for c in np.arange(columns):
         S = tree[rows - 1, c]
-        price_tree[rows - 1, c] = max(S - K, 0)
+        if call:
+            price_tree[rows - 1, c] = max(S - K, 0)
+        else:
+            price_tree[rows - 1, c] = max(K - S, 0)
 
 
     for i in np.arange(rows - 1)[::-1]:
@@ -68,9 +75,29 @@ def valueOptionMatrixAmerican(tree, T, r, K, vol, N):
             price_tree[i, j] = np.exp(-r * dt) * (p * up + (1 - p) * down)
 
             S = tree[i, j]
-            price_tree[i, j] = max(price_tree[i, j], S - K)
+            if call:
+                price_tree[i, j] = max(price_tree[i, j], S - K)
+            else:
+                price_tree[i, j] = max(price_tree[i, j], K - S)
 
     return price_tree
+
+
+def approxGbmEuler(M, T, r, vol, S0):
+    delta_t = T/M
+    price = [S0]
+
+    for m in np.arange(M):
+        Z_m = np.random.normal(0,1)
+        price.append(price[-1] + r*price[-1]*delta_t + vol * price[-1] * np.sqrt(delta_t) * Z_m)
+    return price
+
+# T = 1
+# M = 100
+# price = approxGbmEuler(M, T, 0.05, 0.2, 50)
+# plt.plot(np.arange(0,T+T/M,T/M),price)
+# plt.show()
+# quit()
 
 def example():
     sigma = 0.25
@@ -199,8 +226,6 @@ def part_4():
         price = valueOptionMatrix(tree, T, r, K, sigma, N)
 
         d1 = (np.log(S / K) + (r + sigma ** 2 / 2) * T) / (sigma * np.sqrt(T))
-        d2 = d1 - sigma * np.sqrt(T)
-        priceAnalytical = S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
 
         delta_tree = (price[1, 0] - price[1, 1]) / (tree[1, 0] - tree[1, 1])
         delta_analytical = norm.cdf(d1)
@@ -209,7 +234,7 @@ def part_4():
         delta_list_analytical.append(delta_analytical)
 
     plt.plot(sigma_list, delta_list_tree, label="Binomial tree")
-    plt.plot(sigma_list, delta_list_analytical, label="Black Scholes")
+    plt.plot(sigma_list, delta_list_analytical, label="Black Scholes", linestyle="--")
     plt.xlabel("Volatility")
     plt.ylabel("Delta")
     plt.legend()
@@ -217,47 +242,136 @@ def part_4():
     plt.clf()
 
 def part_5():
-    european_list = []
-    american_list = []
-    diff_list = []
+    for call in [True, False]:
+        european_list = []
+        american_list = []
+        diff_list = []
 
-    for sigma in sigma_list:
-        tree = buildTree(S, sigma, T, N)
-        price_european = valueOptionMatrix(tree, T, r, K, sigma, N)
+        for sigma in sigma_list:
+            tree = buildTree(S, sigma, T, N)
+            price_european = valueOptionMatrix(tree, T, r, K, sigma, N, call)
 
-        tree = buildTree(S, sigma, T, N)
-        price_american = valueOptionMatrixAmerican(tree, T, r, K, sigma, N)
+            tree = buildTree(S, sigma, T, N)
+            price_american = valueOptionMatrixAmerican(tree, T, r, K, sigma, N, call)
 
-        european_list.append(price_european[0, 0])
-        american_list.append(price_american[0, 0])
+            european_list.append(price_european[0, 0])
+            american_list.append(price_american[0, 0])
 
-        diff_list.append(price_american[0, 0] - price_european[0, 0])
+            diff_list.append(price_american[0, 0] - price_european[0, 0])
 
-    plt.plot(sigma_list, european_list, label="European")
-    plt.plot(sigma_list, american_list, label="American")
-    plt.xlabel("Volatility")
-    plt.ylabel("Option price")
-    plt.legend()
-    plt.savefig("american_european.png")
-    plt.clf()
+        if call:
+            plt.plot(sigma_list, european_list, label="European")
+            plt.plot(sigma_list, american_list, label="American", linestyle="--")
+            plt.xlabel("Volatility")
+            plt.ylabel("Option price")
+            plt.legend()
+            plt.savefig("american_european_call.png")
+            plt.clf()
 
-    plt.plot(sigma_list, diff_list)
-    plt.xlabel("Volatility")
-    plt.ylabel("Difference")
-    plt.savefig("american_european_diff.png")
-    plt.clf()
+            plt.plot(sigma_list, diff_list)
+            plt.xlabel("Volatility")
+            plt.ylabel("Difference")
+            plt.savefig("american_european_diff_call.png")
+            plt.clf()
+        else:
+            plt.plot(sigma_list, european_list, label="European")
+            plt.plot(sigma_list, american_list, label="American")
+            plt.xlabel("Volatility")
+            plt.ylabel("Option price")
+            plt.legend()
+            plt.savefig("american_european_put.png")
+            plt.clf()
+
+            plt.plot(sigma_list, diff_list)
+            plt.xlabel("Volatility")
+            plt.ylabel("Difference")
+            plt.savefig("american_european_diff_put.png")
+            plt.clf()
+
+def part33():
+    r = 0.06
+    starting_price = 100
+    K = 99
+    T = 1
+    time_steps = 365
+
+    # same volatility experiment
+    adjust_freq = 7
+    vol_euler = 0.2
+    vol_bs = 0.2
+    iterations = 1000
+    ############################################################################
+    money_list = []
+    for i in range(iterations):
+        money = 0
+        price = approxGbmEuler(time_steps, T, r, vol_euler, starting_price)
+        time = []
+        for x in np.arange(0,T+T/time_steps,T/time_steps):
+            if x <= 1:
+                time.append(x)
+    
+        # plt.plot(time,price)
+        # plt.show()
+
+        hedge_delta_t = 0
+
+        for t in np.arange(0, time_steps, adjust_freq):
+            previous_delta = hedge_delta_t
+
+            # calculate delta
+            d1 = (np.log(price[t] / K) + (r + vol_bs ** 2 / 2) * (T-t/time_steps)) / (vol_bs * np.sqrt(T-t/time_steps))
+
+            hedge_delta_t = norm.cdf(d1)
+            # print(hedge_delta_t)
+
+            # adjust hedge position, calculate net money
+            money -= price[t] * (hedge_delta_t - previous_delta)
+            # if t % 10 == 0:
+            #     print(f'price {price[t]}')
+            #     print(f'hedge_delta {hedge_delta_t}')
+            #     print(f'money {money}')
+            #     print()
+        
+        # strike day
+        if price[-1] > K:
+            option_price = price[-1] - K
+        else:
+            option_price = 0
+
+        # print('Final')
+        # print(f'stock price {price[-1]}')
+        # print(f'money {money}')
+        # print(f'hedge_delta {hedge_delta_t}')
+        # print(f'option price {option_price}')
+
+        money_at_strike = money + hedge_delta_t * price[-1] - option_price
+        # print(f'money at strike {money_at_strike}')
+
+        money_list.append(money_at_strike)
+
+    error = np.std(money_list) * 1.96
+
+    
+    print(f'Money after: {sum(money_list)/len(money_list):.2f} +- {error:.2f}')
+
+    # different volatility experiment
+
+
+    return
 
 
 # part_1()
 # part_2()
 # part_3()
 # part_4()
-part_5()
+# part_5()
+part33()
 
-sigma = 0.1
-tree = buildTree(S, sigma, T, N)
-price_american = valueOptionMatrixAmerican(tree, T, r, K, sigma, N)
-price_european = valueOptionMatrix(tree, T, r, K, sigma, N)
+# sigma = 0.2
+# tree = buildTree(S, sigma, T, N)
+# price_american = valueOptionMatrixAmerican(tree, T, r, K, sigma, N, False)
+# tree = buildTree(S, sigma, T, N)
+# price_european = valueOptionMatrix(tree, T, r, K, sigma, N, False)
 
-print(price_european[1])
-print(price_american[1])
+# print(price_american[0, 0])
+# print(price_european[0, 0])
