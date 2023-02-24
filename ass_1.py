@@ -288,19 +288,7 @@ def part_5():
             plt.savefig("american_european_diff_put.png")
             plt.clf()
 
-def part33():
-    r = 0.06
-    starting_price = 100
-    K = 99
-    T = 1
-    time_steps = 365
-
-    # same volatility experiment
-    adjust_freq = 7
-    vol_euler = 0.2
-    vol_bs = 0.2
-    iterations = 1000
-    ############################################################################
+def hedge_simulation(iterations, time_steps, vol_euler, vol_bs, starting_price, adjust_freq):
     money_list = []
     for i in range(iterations):
         money = 0
@@ -309,9 +297,6 @@ def part33():
         for x in np.arange(0,T+T/time_steps,T/time_steps):
             if x <= 1:
                 time.append(x)
-    
-        # plt.plot(time,price)
-        # plt.show()
 
         hedge_delta_t = 0
 
@@ -322,15 +307,9 @@ def part33():
             d1 = (np.log(price[t] / K) + (r + vol_bs ** 2 / 2) * (T-t/time_steps)) / (vol_bs * np.sqrt(T-t/time_steps))
 
             hedge_delta_t = norm.cdf(d1)
-            # print(hedge_delta_t)
 
             # adjust hedge position, calculate net money
             money -= price[t] * (hedge_delta_t - previous_delta)
-            # if t % 10 == 0:
-            #     print(f'price {price[t]}')
-            #     print(f'hedge_delta {hedge_delta_t}')
-            #     print(f'money {money}')
-            #     print()
         
         # strike day
         if price[-1] > K:
@@ -338,24 +317,64 @@ def part33():
         else:
             option_price = 0
 
-        # print('Final')
-        # print(f'stock price {price[-1]}')
-        # print(f'money {money}')
-        # print(f'hedge_delta {hedge_delta_t}')
-        # print(f'option price {option_price}')
 
         money_at_strike = money + hedge_delta_t * price[-1] - option_price
-        # print(f'money at strike {money_at_strike}')
-
         money_list.append(money_at_strike)
 
-    error = np.std(money_list) * 1.96
+    return money_list
+
+def part33():
+    r = 0.06
+    starting_price = 100
+    K = 99
+    T = 1
+    time_steps = 365
+    iterations = 1000
+
+    # same volatility experiment
 
     
-    print(f'Money after: {sum(money_list)/len(money_list):.2f} +- {error:.2f}')
+    # adjust_freq experiment ###################################################
+    # adjust_freqs = np.arange(7,70,7)
+    # vol_euler = 0.2
+    # vol_bs = 0.2
 
+    # profits = []
+    # errors = []
+    # for adjust_freq in adjust_freqs:
+    #     print(f'{adjust_freq:.2f}', end = '\r')
+    #     money_list = hedge_simulation(iterations, time_steps, vol_euler, vol_bs, starting_price, adjust_freq)
+    #     profits.append(sum(money_list)/len(money_list))
+    #     errors.append(np.std(money_list) * 1.96)
+    
+    # plt.plot(adjust_freqs, profits)
+    # plt.fill_between(adjust_freqs, np.array(profits) - np.array(errors), np.array(profits) + np.array(errors), alpha = 0.2)
+    # plt.xlabel(r'Days between $\Delta_t$ adjustment')
+    # plt.ylabel('Profits')
+    # plt.show()
+    # adjust_freq experiment ###################################################
+
+    # volatility experiment ####################################################
+    adjust_freq = 7
+    vol_list = np.arange(0.01,0.3,0.01)
+
+    profits = []
+    errors = []
+    for vol in vol_list:
+        print(f'{vol:.2f}', end = '\r')
+        money_list = hedge_simulation(iterations, time_steps, vol, vol, starting_price, adjust_freq)
+        profits.append(sum(money_list)/len(money_list))
+        errors.append(np.std(money_list) * 1.96)
+    
+    plt.plot(vol_list, profits)
+    plt.fill_between(vol_list, np.array(profits) - np.array(errors), np.array(profits) + np.array(errors), alpha = 0.2)
+    plt.xlabel(r'Volatility')
+    plt.ylabel('Profits')
+    plt.show()
+    # volatility experiment ####################################################
+    
+    
     # different volatility experiment
-
 
     return
 
