@@ -383,23 +383,23 @@ def part33():
     # adjust_freq experiment ###################################################
 
     # volatility experiment ####################################################
-    # adjust_freq = 1
-    # vol_list = np.arange(0.01,0.41,0.01)
-    # vol_euler = 0.2
-    # profits = []
-    # errors = []
-    # for vol_bs in vol_list:
-    #     print(f'{vol_bs:.2f}', end = '\r')
-    #     money_list = hedge_simulation(iterations, time_steps, vol_euler, vol_bs, starting_price, adjust_freq)
-    #     profits.append(sum(money_list)/len(money_list))
-    #     errors.append(np.std(money_list) * 1.96)
+    adjust_freq = 1
+    vol_list = np.arange(0.01,0.41,0.01)
+    vol_euler = 0.2
+    profits = []
+    errors = []
+    for vol_bs in vol_list:
+        print(f'{vol_bs:.2f}', end = '\r')
+        money_list = hedge_simulation(iterations, time_steps, vol_euler, vol_bs, starting_price, adjust_freq)
+        profits.append(sum(money_list)/len(money_list))
+        errors.append(np.std(money_list) * 1.96)
     
-    # plt.plot(vol_list, profits)
-    # plt.fill_between(vol_list, np.array(profits) - np.array(errors), np.array(profits) + np.array(errors), alpha = 0.2)
-    # plt.xlabel(r'Volatility')
-    # plt.ylabel('Profits')
-    # plt.tight_layout
-    # plt.show()
+    plt.plot(vol_list, profits)
+    plt.fill_between(vol_list, np.array(profits) - np.array(errors), np.array(profits) + np.array(errors), alpha = 0.2)
+    plt.xlabel(r'Volatility')
+    plt.ylabel('Profits')
+    plt.tight_layout
+    plt.show()
     # volatility experiment ####################################################
     
     
