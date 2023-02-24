@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 from scipy.stats import norm
 import scipy.stats as stats
 
+
+plt.rcParams.update({'font.size': 15})
+
 def buildTree(S, vol, T, N):
     dt = T / N
 
@@ -180,19 +183,26 @@ def part_2():
 
         tree_list.append(price[0, 0])
         analytical_list.append(priceAnalytical)
-        error_list.append(np.abs(price[0, 0] - priceAnalytical))
+        error_list.append((price[0, 0] - priceAnalytical)/priceAnalytical)
 
     plt.plot(sigma_list, tree_list, label="Binomial tree")
     plt.plot(sigma_list, analytical_list, label="Black Scholes")
     plt.xlabel("Volatility")
-    plt.ylabel("Option price")
+    plt.ylabel("Option price ($)")
+    plt.xlim(0, 1)
+    plt.ylim(0, 45)
     plt.legend()
+    plt.tight_layout()
     plt.savefig("volatility.png")
     plt.clf()
 
     plt.plot(sigma_list, error_list)
     plt.xlabel("Volatility")
-    plt.ylabel("Error")
+    plt.ylabel("Relative error")
+    plt.xlim(0, 1)
+    plt.ylim(-0.15, 0.05)
+    # plt.yticks(np.arange(0, 0.16, 0.03))
+    plt.tight_layout()
     plt.savefig("volatility_error.png")
     plt.clf()
 
@@ -204,17 +214,20 @@ def part_3():
     d2 = d1 - sigma * np.sqrt(T)
     priceAnalytical = S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
 
-    for N in np.arange(1, 100):
+    for N in np.arange(1, 101):
         tree = buildTree(S, sigma, T, N)
         price = valueOptionMatrix(tree, T, r, K, sigma, N)
 
         diff = np.abs(price[0, 0] - priceAnalytical)
         diff_list.append(diff)
-
-    plt.plot(np.arange(1, 100), diff_list)
+    plt.plot(np.arange(1, 101), diff_list)
     plt.xlabel("Number of steps in binomial tree")
-    plt.ylabel("Error")
+    plt.ylabel("Error ($)")
+    plt.xlim(0, 100)
+    plt.ylim(0, 1.75)
+    plt.tight_layout()
     plt.savefig("diff.png")
+    plt.show()
     plt.clf()
 
 def part_4():
@@ -233,11 +246,14 @@ def part_4():
         delta_list_tree.append(delta_tree)
         delta_list_analytical.append(delta_analytical)
 
-    plt.plot(sigma_list, delta_list_tree, label="Binomial tree")
-    plt.plot(sigma_list, delta_list_analytical, label="Black Scholes", linestyle="--")
+    plt.plot(sigma_list, delta_list_tree, label="Binomial tree", color="red")
+    plt.plot(sigma_list, delta_list_analytical, label="Black Scholes", linestyle="--", color="blue")
     plt.xlabel("Volatility")
     plt.ylabel("Delta")
+    plt.xlim(0, 1)
+    plt.ylim(0.6, 1)
     plt.legend()
+    plt.tight_layout()
     plt.savefig("delta.png")
     plt.clf()
 
@@ -260,31 +276,43 @@ def part_5():
             diff_list.append(price_american[0, 0] - price_european[0, 0])
 
         if call:
-            plt.plot(sigma_list, european_list, label="European")
-            plt.plot(sigma_list, american_list, label="American", linestyle="--")
+            plt.plot(sigma_list, european_list, label="European", color="blue")
+            plt.plot(sigma_list, american_list, label="American", linestyle="--", color="red")
             plt.xlabel("Volatility")
-            plt.ylabel("Option price")
+            plt.ylabel("Option pric ($)")
+            plt.xlim(0, 1)
+            plt.ylim(0, 45)
             plt.legend()
+            plt.tight_layout()
             plt.savefig("american_european_call.png")
             plt.clf()
 
             plt.plot(sigma_list, diff_list)
             plt.xlabel("Volatility")
-            plt.ylabel("Difference")
+            plt.ylabel("Difference (American - European) ($)")
+            plt.xlim(0, 1)
+            plt.ylim(-1, 1)
+            plt.tight_layout()
             plt.savefig("american_european_diff_call.png")
             plt.clf()
         else:
-            plt.plot(sigma_list, european_list, label="European")
-            plt.plot(sigma_list, american_list, label="American")
+            plt.plot(sigma_list, european_list, label="European", color="blue")
+            plt.plot(sigma_list, american_list, label="American", color="red")
             plt.xlabel("Volatility")
-            plt.ylabel("Option price")
+            plt.ylabel("Option price ($)")
+            plt.xlim(0, 1)
+            plt.ylim(0, 35)
             plt.legend()
+            plt.tight_layout()
             plt.savefig("american_european_put.png")
             plt.clf()
 
             plt.plot(sigma_list, diff_list)
             plt.xlabel("Volatility")
-            plt.ylabel("Difference")
+            plt.ylabel("Difference (American - European) ($)")
+            plt.xlim(0, 1)
+            plt.ylim(0, 1)
+            plt.tight_layout()
             plt.savefig("american_european_diff_put.png")
             plt.clf()
 
@@ -381,10 +409,10 @@ def part33():
 
 # part_1()
 # part_2()
-# part_3()
+part_3()
 # part_4()
 # part_5()
-part33()
+# part33()
 
 # sigma = 0.2
 # tree = buildTree(S, sigma, T, N)
