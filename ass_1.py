@@ -360,45 +360,46 @@ def part33():
     iterations = 1000
 
     # same volatility experiment
-
     
     # adjust_freq experiment ###################################################
-    # adjust_freqs = np.arange(7,70,7)
-    # vol_euler = 0.2
-    # vol_bs = 0.2
+    adjust_freqs = np.arange(1,49,2)
+    vol_euler = 0.2
+    vol_bs = 0.2
 
+    profits = []
+    errors = []
+    for adjust_freq in adjust_freqs:
+        print(f'{adjust_freq:.2f}', end = '\r')
+        money_list = hedge_simulation(iterations, time_steps, vol_euler, vol_bs, starting_price, adjust_freq)
+        profits.append(sum(money_list)/len(money_list))
+        errors.append(np.std(money_list) * 1.96)
+    
+    plt.plot(adjust_freqs, profits)
+    plt.fill_between(adjust_freqs, np.array(profits) - np.array(errors), np.array(profits) + np.array(errors), alpha = 0.2)
+    plt.xlabel(r'Days between $\Delta_t$ adjustment')
+    plt.ylabel('Profits')
+    plt.tight_layout
+    plt.show()
+    # adjust_freq experiment ###################################################
+
+    # volatility experiment ####################################################
+    # adjust_freq = 1
+    # vol_list = np.arange(0.01,0.41,0.01)
+    # vol_euler = 0.2
     # profits = []
     # errors = []
-    # for adjust_freq in adjust_freqs:
-    #     print(f'{adjust_freq:.2f}', end = '\r')
+    # for vol_bs in vol_list:
+    #     print(f'{vol_bs:.2f}', end = '\r')
     #     money_list = hedge_simulation(iterations, time_steps, vol_euler, vol_bs, starting_price, adjust_freq)
     #     profits.append(sum(money_list)/len(money_list))
     #     errors.append(np.std(money_list) * 1.96)
     
-    # plt.plot(adjust_freqs, profits)
-    # plt.fill_between(adjust_freqs, np.array(profits) - np.array(errors), np.array(profits) + np.array(errors), alpha = 0.2)
-    # plt.xlabel(r'Days between $\Delta_t$ adjustment')
+    # plt.plot(vol_list, profits)
+    # plt.fill_between(vol_list, np.array(profits) - np.array(errors), np.array(profits) + np.array(errors), alpha = 0.2)
+    # plt.xlabel(r'Volatility')
     # plt.ylabel('Profits')
+    # plt.tight_layout
     # plt.show()
-    # adjust_freq experiment ###################################################
-
-    # volatility experiment ####################################################
-    adjust_freq = 7
-    vol_list = np.arange(0.01,0.3,0.01)
-
-    profits = []
-    errors = []
-    for vol in vol_list:
-        print(f'{vol:.2f}', end = '\r')
-        money_list = hedge_simulation(iterations, time_steps, vol, vol, starting_price, adjust_freq)
-        profits.append(sum(money_list)/len(money_list))
-        errors.append(np.std(money_list) * 1.96)
-    
-    plt.plot(vol_list, profits)
-    plt.fill_between(vol_list, np.array(profits) - np.array(errors), np.array(profits) + np.array(errors), alpha = 0.2)
-    plt.xlabel(r'Volatility')
-    plt.ylabel('Profits')
-    plt.show()
     # volatility experiment ####################################################
     
     
@@ -409,10 +410,10 @@ def part33():
 
 # part_1()
 # part_2()
-part_3()
+# part_3()
 # part_4()
 # part_5()
-# part33()
+part33()
 
 # sigma = 0.2
 # tree = buildTree(S, sigma, T, N)
