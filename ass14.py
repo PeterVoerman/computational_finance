@@ -6,8 +6,6 @@ K = 50
 Stlist = np.arange(30, 70, 0.5)
 P1, P2 = [], []
 
-
-
 for St in Stlist:
     P1.append(max(0, (St - K)) + K - K)
     P2.append(max(0, (K - St)) + St - K)
