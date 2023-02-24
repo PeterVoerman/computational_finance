@@ -325,13 +325,14 @@ def part33():
 
     # same volatility experiment
     adjust_freq = 7
-    vol = 0.2
+    vol_euler = 0.2
+    vol_bs = 0.2
     iterations = 1000
     ############################################################################
     money_list = []
     for i in range(iterations):
         money = 0
-        price = approxGbmEuler(time_steps, T, r, vol, starting_price)
+        price = approxGbmEuler(time_steps, T, r, vol_euler, starting_price)
         time = []
         for x in np.arange(0,T+T/time_steps,T/time_steps):
             if x <= 1:
@@ -346,7 +347,7 @@ def part33():
             previous_delta = hedge_delta_t
 
             # calculate delta
-            d1 = (np.log(price[t] / K) + (r + vol ** 2 / 2) * (T-t/time_steps)) / (vol * np.sqrt(T-t/time_steps))
+            d1 = (np.log(price[t] / K) + (r + vol_bs ** 2 / 2) * (T-t/time_steps)) / (vol_bs * np.sqrt(T-t/time_steps))
 
             hedge_delta_t = norm.cdf(d1)
             # print(hedge_delta_t)
