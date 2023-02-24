@@ -18,7 +18,7 @@ plt.plot(Stlist, P2, label = "put + stock", alpha = 0.5)
 plt.axvline(K, ls='--', color = 'black')
 plt.text(50.5, -.5, "K")
 
-plt.xlabel("St")
+plt.xlabel("$S_T$")
 plt.ylabel("Payoff")
 plt.legend()
 
