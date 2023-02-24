@@ -406,19 +406,36 @@ def part33():
 
     return
 
+def part_14():
+    K = 50
 
-# part_1()
-# part_2()
+    Stlist = np.arange(30, 70, 0.5)
+    P1, P2 = [], []
+
+
+
+    for St in Stlist:
+        P1.append(max(0, (St - K)) + K - K)
+        P2.append(max(0, (K - St)) + St - K)
+
+    plt.title("Payoff diagram for two portfolios")
+    plt.plot(Stlist, P1, label = "call + cash", color = 'yellow', alpha = 0.5)
+    plt.plot(Stlist, P2, label = "put + stock", alpha = 0.5)
+    plt.axvline(K, ls='--', color = 'black')
+    plt.text(50.5, -.5, "K")
+
+    plt.xlabel("$S_T$")
+    plt.ylabel("Payoff")
+    plt.legend()
+
+    plt.savefig("part_14.png")
+
+
+part_1()
+part_2()
 part_3()
-# part_4()
-# part_5()
-# part33()
+part_4()
+part_5()
+part33()
+part_14()
 
-# sigma = 0.2
-# tree = buildTree(S, sigma, T, N)
-# price_american = valueOptionMatrixAmerican(tree, T, r, K, sigma, N, False)
-# tree = buildTree(S, sigma, T, N)
-# price_european = valueOptionMatrix(tree, T, r, K, sigma, N, False)
-
-# print(price_american[0, 0])
-# print(price_european[0, 0])
