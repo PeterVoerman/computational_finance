@@ -17,19 +17,19 @@ delta_t = T / N
 
 payoff_sum = 0
 
-for M in [10, 100, 1000, 10000, 100000]:
+for M in np.logspace(0, 6, 7, dtype=int):
     print(f"M = {M}")
     value_list = []
     for j in range(1000):
         print(f"{j/1000*100:.2f}%", end="\r")
         payoff_sum = 0
-        for i in range(M):
-            # print(f"{i/M*100:.2f}%", end="\r")
-            S = S0
-            for j in range(N):
-                S += S * (r * delta_t + sigma * np.random.normal(0, 1) * np.sqrt(delta_t))
 
-            payoff_sum += max(S - K, 0)
+        S = np.array([S0] * M, dtype=np.float64)
+        
+        for j in range(N):
+            S += S * (r * delta_t + sigma * np.random.normal(0, 1, M) * np.sqrt(delta_t))
+
+        payoff_sum = sum(np.maximum(S - K, 0))
 
         option_value = np.exp(-r * T) * payoff_sum / M
 
@@ -37,3 +37,6 @@ for M in [10, 100, 1000, 10000, 100000]:
 
     print(f"Average price: {np.mean(value_list)}")
     print(f"Standard deviation: {np.std(value_list)}")
+
+end = time.time()
+print(f"Time elapsed: {end - start}")
