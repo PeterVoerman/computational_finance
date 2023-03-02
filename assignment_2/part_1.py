@@ -17,6 +17,12 @@ delta_t = T / N
 
 payoff_sum = 0
 
+d1 = (np.log(S0 / K) + (r + sigma ** 2 / 2) * T) / (sigma * np.sqrt(T))
+delta_analytical = norm.cdf(d1)
+print(delta_analytical)
+
+quit()
+
 for M in np.logspace(0, 6, 7, dtype=int):
     print(f"M = {M}")
     value_list = []
