@@ -8,7 +8,6 @@ matplotlib.rcParams.update({'font.size': 16})
 
 start = time.time()
 T = 1
-M = 1000
 
 K = 99
 S0 = 100
@@ -51,6 +50,7 @@ def vary_M():
     plt.xlabel("M")
     plt.ylabel("Error")
     plt.tight_layout()
+    plt.xticks([1e0, 1e2, 1e4, 1e6], ["$10^0$", "$10^2$", "$10^4$", "$10^6$"])
     plt.savefig("error_varying_M.png")
     plt.clf()
 
@@ -58,6 +58,8 @@ def vary_M():
     plt.xscale("log")
     plt.xlabel("M")
     plt.ylabel(f'$\sigma$')
+    plt.tight_layout()
+    plt.xticks([1e0, 1e2, 1e4, 1e6], ["$10^0$", "$10^2$", "$10^4$", "$10^6$"])
     plt.savefig("stdev_varying_M.png")
     plt.clf()
 
@@ -96,7 +98,7 @@ def vary_K():
 
         price_list.append(np.mean(value_list))
         error_list.append((abs(np.mean(value_list) - priceAnalytical)))
-        stdev_list.append(np.std(value_list)/np.mean(value_list))
+        stdev_list.append(np.std(value_list))
         analytical_list.append(priceAnalytical)
 
     plt.plot(range(K_start, K_end + 1, K_step_size), price_list, label="Price")
@@ -156,7 +158,7 @@ def vary_sigma():
 
         price_list.append(np.mean(value_list))
         error_list.append((abs(np.mean(value_list) - priceAnalytical)))
-        stdev_list.append(np.std(value_list)/np.mean(value_list))
+        stdev_list.append(np.std(value_list))
         analytical_list.append(priceAnalytical)
 
     plt.plot(np.arange(sigma_start, sigma_end + sigma_step_size, sigma_step_size), price_list, label="Price")
