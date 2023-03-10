@@ -2,6 +2,9 @@ import numpy as np
 from scipy.stats import norm
 import time
 import matplotlib.pyplot as plt
+import matplotlib
+
+matplotlib.rcParams.update({'font.size': 16})
 
 start = time.time()
 T = 1
@@ -15,7 +18,8 @@ r = 0.06
 def vary_M():
     d1 = (np.log(S0 / K) + (r + sigma ** 2 / 2) * T) / (sigma * np.sqrt(T))
     d2 = d1 - sigma * np.sqrt(T)
-    priceAnalytical = S0 * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
+    priceAnalyticalCall = S0 * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
+    priceAnalytical = K * np.exp(-r * T) - S0 + priceAnalyticalCall
 
     error_list = []
     stdev_list = []
@@ -46,6 +50,7 @@ def vary_M():
     plt.xscale("log")
     plt.xlabel("M")
     plt.ylabel("Error")
+    plt.tight_layout()
     plt.savefig("error_varying_M.png")
     plt.clf()
 
@@ -66,13 +71,15 @@ def vary_K():
     error_list = []
     stdev_list = []
     price_list = []
+    analytical_list = []
 
     for K in range(K_start, K_end + 1, K_step_size):
         print(f"K = {K}")
 
         d1 = (np.log(S0 / K) + (r + sigma ** 2 / 2) * T) / (sigma * np.sqrt(T))
         d2 = d1 - sigma * np.sqrt(T)
-        priceAnalytical = S0 * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
+        priceAnalyticalCall = S0 * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
+        priceAnalytical = K * np.exp(-r * T) - S0 + priceAnalyticalCall
 
         value_list = []
         for j in range(1000):
@@ -90,10 +97,14 @@ def vary_K():
         price_list.append(np.mean(value_list))
         error_list.append((abs(np.mean(value_list) - priceAnalytical)))
         stdev_list.append(np.std(value_list)/np.mean(value_list))
+        analytical_list.append(priceAnalytical)
 
     plt.plot(range(K_start, K_end + 1, K_step_size), price_list, label="Price")
+    plt.plot(range(K_start, K_end + 1, K_step_size), analytical_list, label="Analytical price", linestyle="--")
     plt.xlabel("K")
     plt.ylabel("Price")
+    plt.legend()
+    plt.tight_layout()
     plt.savefig("price_varying_K.png")
     plt.clf()
 
@@ -115,18 +126,20 @@ def vary_sigma():
 
     sigma_start = 0
     sigma_end = 1
-    sigma_step_size = 0.2
+    sigma_step_size = 0.1
 
     error_list = []
     stdev_list = []
     price_list = []
+    analytical_list = []
 
     for sigma in np.arange(sigma_start, sigma_end + sigma_step_size, sigma_step_size):
         print(f"sigma = {sigma}")
 
         d1 = (np.log(S0 / K) + (r + sigma ** 2 / 2) * T) / (sigma * np.sqrt(T))
         d2 = d1 - sigma * np.sqrt(T)
-        priceAnalytical = S0 * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
+        priceAnalyticalCall = S0 * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
+        priceAnalytical = K * np.exp(-r * T) - S0 + priceAnalyticalCall
 
         value_list = []
         for j in range(1000):
@@ -144,10 +157,13 @@ def vary_sigma():
         price_list.append(np.mean(value_list))
         error_list.append((abs(np.mean(value_list) - priceAnalytical)))
         stdev_list.append(np.std(value_list)/np.mean(value_list))
+        analytical_list.append(priceAnalytical)
 
     plt.plot(np.arange(sigma_start, sigma_end + sigma_step_size, sigma_step_size), price_list, label="Price")
+    plt.plot(np.arange(sigma_start, sigma_end + sigma_step_size, sigma_step_size), analytical_list, label="Analytical price", linestyle="--")
     plt.xlabel("Volatility")
     plt.ylabel("Price")
+    plt.legend()
     plt.savefig("price_varying_sigma.png")
     plt.clf()
 
@@ -159,7 +175,7 @@ def vary_sigma():
 
     plt.plot(np.arange(sigma_start, sigma_end + sigma_step_size, sigma_step_size), stdev_list, label="Standard deviation")
     plt.xlabel("Volatility")
-    plt.ylabel("Standard deviation")
+    plt.ylabel(f'$\sigma$')
     plt.savefig("stdev_varying_sigma.png")
     plt.clf()
 
